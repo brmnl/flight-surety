@@ -63,7 +63,7 @@ truffle test ./test/oracles.js
 
 ### Separation of Concerns, Operational Control and “Fail Fast”
 
-- [ ] Smart Contract code is separated into multiple contracts, each with a single purpose.
+- [ ] Smart Contract code is separated into multiple contracts, each with a single purpose.
   - [ ] FlightSuretyData.sol for data persistence
   - [ ] FlightSuretyApp.sol for app logic and oracles code
 - [ ] A Dapp client has been created and is used for triggering contract calls. Client can be launched with “npm run dapp” and is available at http://localhost:8000
