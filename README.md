@@ -21,11 +21,13 @@ The project comprises two primary components: a pair of smart contracts and the 
 ### Prerequisites
 
 - Node.JS v10.7.0
-- Truffle v5
+- Python 2.7.18 (for node-gyp)
+- Truffle v5.0.2
 - Solidity v0.4.24 (solc-js)
 - Web3.js v1.0.0-beta.37
-- Webpack v4.6.0
+- Ganache-CLI v6.12.2
 - Babel v7.0.0-beta.46
+- Babel Core v6.26.3
 - BigNumber.js v8.0.2
 - CSS Loader v1.0.0
 - Express v4.16.4
@@ -37,16 +39,32 @@ The project comprises two primary components: a pair of smart contracts and the 
 - Style Loader v0.23.1
 - Superstatic v6.0.3
 - Truffle HDWallet Provider v1.0.2
-- Webpack Dev Server v3.1.14
+- Webpack v4.35.2
+- Webpack CLI v3.3.6
+- Webpack Dev Server v3.7.2
 - Webpack Node Externals v1.7.2
-- Babel Core v6.26.3
 
 ### Installation
 
 Install all requisite npm packages (as listed in `package.json`) and compile smart contracts:
 
 ```
-npm install
+npm install --python=python2
+npm install -g truffle@5.0.2 --python=python2
+npm install -g ganache-cli@6.12.2 --python=python2
+```
+
+Run Ganache:
+
+```
+ganache-cli -l 99999999999999 -m "wish exercise slender legal goose lecture subway excuse casino spoil clerk gesture" -e 100000 -a 50
+```
+
+Using this command, the mnemonic is used to generate 50 accounts with 100'000 ETH each. The `-l` flag sets the block gas limit to a very high number, `-e` sets the default account balance to 100'000 ETH, and `-a` sets the number of accounts to generate.
+
+Compile smart contracts:
+
+```
 truffle compile
 ```
 

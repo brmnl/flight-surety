@@ -17,6 +17,7 @@ yarn.lock
 dist/
 build/
 out/
+prod/
 
 # Ignore user-specific or editor-generated files
 .vscode/
