@@ -2,6 +2,20 @@
 
 An InsurTech flight delay insurance solution based on Ethereum smart contract that uses trustless Oracles for flight information.
 
+## Project Description
+
+Flight Surety is an insurance product designed for airline passengers. It provides credits to passengers when their flights are delayed due to airline faults. This credit can be withdrawn by passengers at their convenience. The system operates through a smart contract deployed on the Ethereum blockchain, which is funded with Ether and managed by a consortium of airlines. The smart contract disburses credits to insured passengers when specific conditions, such as flight delays due to airline errors, are met.
+
+Oracles play a vital role by providing flight status information to the smart contract, which determines whether passengers are eligible for credits.
+
+## Project Architecture
+
+The project comprises two primary components: a pair of smart contracts and the Decentralized Application (DApp).
+
+**Smart Contracts:** The first smart contract, coded in Solidity and residing on the Ethereum blockchain, is responsible for data persistence, managing the allocation of credits to insured passengers. The second smart contract handles application logic and oracle code.
+
+**DApp:** The DApp is a web application developed using HTML, CSS, and JavaScript. It leverages Web3.js to seamlessly interact with both smart contracts. A Node.js server, powered by Express.js, serves web pages and provides a REST API for interactions with the smart contracts.
+
 ## Getting Started
 
 ### Prerequisites
