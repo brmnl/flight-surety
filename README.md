@@ -59,7 +59,7 @@ npm run server
 truffle test ./test/oracles.js
 ```
 
-## Project Requirements
+## Project Requirements (To Do's)
 
 ### Separation of Concerns, Operational Control and “Fail Fast”
 
