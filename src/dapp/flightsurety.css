@@ -1,14 +1,14 @@
 body {
-    background-image: url('flight.jpg'); /* Source: iStockPhoto */
-    background-repeat: no-repeat;
+    background-image: url('sky.jpg'); /* Source: Unsplash */
+    background-repeat: no-repeat; 
     background-size: cover;
 }
 
 .container {
-    margin-top: 400px;
-    background-color: #000;
+    margin-top: 200px;
+    background-color: #ffffff;
     opacity: 0.9;
-    color: #fff;
+    color: #000000;
     padding: 40px;
 }
 
@@ -26,11 +26,11 @@ section {
 
 .field {
     font-weight: bold;
-    text-align: right;
+    text-align: left;
 }
 
 .field-value {
-    color: #0e7fa8;
+    color: #0ad1bd;
 }
 
 label.form {
@@ -40,3 +40,8 @@ label.form {
 input {
     margin-right: 30px;
 }
+
+.row {
+    margin-left: 0;
+    margin-right: 0;
+  }

@@ -10,21 +10,27 @@
 </head>
 
 <body>
+    <header>
+        <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+            <a class="navbar-brand" href="#"><img src="logo.png" alt="FlightSurety"></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsDefault"
+                aria-controls="navbarsDefault" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </nav>
+    </header>
 
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-        <a class="navbar-brand" href="#">FlightSurety</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault"
-            aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </nav>
-
-    <main class="container">
-
+    <main class="container shadow-lg">
         <div id="display-wrapper" class="top-20">
         </div>
-        <div class="row top-20">
-            <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">Flight Number</span>
+            </div>
+            <input type="text" id="flight-number" class="form-control" aria-label="Flight Number"
+                aria-describedby="inputGroup-sizing-default">
+            <btn class="btn btn-dark" id="submit-oracle">Submit to Oracles</btn>
         </div>
     </main>
 
