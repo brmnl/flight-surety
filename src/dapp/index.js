@@ -33,7 +33,37 @@ import TestAddreses from "./addresses.json";
         );
       });
     });
+
+    // Set Operational Status
+    DOM.elid("submit-status-change").addEventListener("click", () => {
+      let opsStatus = null;
+      let fromAddress = DOM.elid("actAsAccount").value;
+
+      if (DOM.elid("setOpsStatus").value == 1) {
+        opsStatus = true;
+      } else {
+        opsStatus = false;
+      }
+
+      contract.setOperatingStatus(opsStatus, fromAddress, (error, result) => {
+        if (error) {
+          display_replace(
+            [{ label: "Operational Status", error: error, value: result }],
+            "ops-status"
+          );
+        } else {
+          contract.isOperational((error, result) => {
+            console.log(error, result);
+            display_replace(
+              [{ label: "Operational Status", error: error, value: result }],
+              "ops-status"
+            );
+          });
+        }
+      });
+    });
   });
+
   // Populate the options from the JSON file
   populateAddressOptions("addroptions");
 })();
