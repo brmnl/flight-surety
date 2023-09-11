@@ -57,10 +57,10 @@ npm install -g ganache-cli@6.12.2 --python=python2
 Run Ganache:
 
 ```
-ganache-cli -l 99999999999999 -m "wish exercise slender legal goose lecture subway excuse casino spoil clerk gesture" -e 100000 -a 50
+ganache-cli -l 99999999999999 -m "wish exercise slender legal goose lecture subway excuse casino spoil clerk gesture" -e 1000 -a 50
 ```
 
-Using this command, the mnemonic is used to generate 50 accounts with 100'000 ETH each. The `-l` flag sets the block gas limit to a very high number, `-e` sets the default account balance to 100'000 ETH, and `-a` sets the number of accounts to generate.
+Using this command, the mnemonic is used to generate 50 accounts with 1000 ETH each. The `-l` flag sets the block gas limit to a very high number, `-e` sets the default account balance to 1000 ETH, and `-a` sets the number of accounts to generate.
 
 Compile smart contracts:
 
@@ -95,10 +95,10 @@ truffle test ./test/oracles.js
 
 ### Separation of Concerns, Operational Control and “Fail Fast”
 
-- [ ] Smart Contract code is separated into multiple contracts, each with a single purpose.
-  - [ ] FlightSuretyData.sol for data persistence
-  - [ ] FlightSuretyApp.sol for app logic and oracles code
-- [ ] A Dapp client has been created and is used for triggering contract calls. Client can be launched with “npm run dapp” and is available at http://localhost:8000
+- [x] Smart Contract code is separated into multiple contracts, each with a single purpose.
+  - [x] FlightSuretyData.sol for data persistence
+  - [x] FlightSuretyApp.sol for app logic and oracles code
+- [x] A Dapp client has been created and is used for triggering contract calls. Client can be launched with “npm run dapp” and is available at http://localhost:8000
   - [ ] Passenger can purchase insurance for flight
   - [ ] Trigger contract to request flight status update
 - [ ] A server app has been created for simulating oracle behavior. Server can be launched with “npm run server”
