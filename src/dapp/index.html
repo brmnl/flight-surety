@@ -20,9 +20,37 @@
         </nav>
     </header>
 
-    <main class="container shadow-lg">
-        <div id="display-wrapper" class="top-20">
+    <main class="container shadow-lg first-container">
+        <h2>Operational Status</h2>
+        <h5 class="mb-5">Check if contract is operational or change status</h5>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="actAsAccount">Act as Account</label>
+            </div>
+            <select class="custom-select rounded addroptions" id="actAsAccount">
+                <option selected="">Select account ...</option>
+            </select>
         </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="setOpsStatus">Set operational status</label>
+            </div>
+            <select class="custom-select rounded" id="setOpsStatus">
+                <option selected="">Select status ...</option>
+                <option value="1">true</option>
+                <option value="0">false</option>
+            </select>
+            <btn class="btn btn-dark ml-3 " id="submit-status-change">Set Status</btn>
+        </div>
+
+        <div id="ops-status" class="top-5"></div>
+    </main>
+
+    <main class="container shadow-lg last-container ">
+        <h2>Oracles</h2>
+        <h5 class="mb-5">Trigger oracles</h5>
 
         <div class="input-group mb-3">
             <div class="input-group-prepend">
@@ -32,6 +60,8 @@
                 aria-describedby="inputGroup-sizing-default">
             <btn class="btn btn-dark" id="submit-oracle">Submit to Oracles</btn>
         </div>
+
+        <div id="display-wrapper" class="top-5"></div>
     </main>
 
 </body>
