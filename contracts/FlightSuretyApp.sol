@@ -204,6 +204,12 @@ contract FlightSuretyApp {
         // Require registration fee
         require(msg.value >= REGISTRATION_FEE, "Registration fee is required");
 
+        // Check if registering Oracle is already registered
+        require(
+            oracles[msg.sender].isRegistered != true,
+            "Oracle is already registered"
+        );
+
         uint8[3] memory indexes = generateIndexes(msg.sender);
 
         oracles[msg.sender] = Oracle({isRegistered: true, indexes: indexes});
