@@ -34,6 +34,7 @@ contract FlightSuretyApp {
         address airline;
     }
     mapping(bytes32 => Flight) private flights;
+    mapping(address => mapping(address => bool)) public airlineAuthorizations;
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -97,12 +98,66 @@ contract FlightSuretyApp {
      * @dev Add an airline to the registration queue
      *
      */
+
+    /*  OLD BLOCK --------REMOVE LATER --- REMOVE LATER ---- REMOVE LATER ----- REMOVE LATER   
     function registerAirline()
         external
         pure
         returns (bool success, uint256 votes)
     {
         return (success, 0);
+    } */
+
+    function registerAirline(
+        string airlineName,
+        address airlineAddress
+    ) public requireIsOperational {
+        flightSuretyData.registerAirline(airlineName, airlineAddress);
+    }
+
+    function getAirlineStatus(
+        address airlineAddress
+    ) public view requireIsOperational returns (bool, bool, string, address) {
+        return flightSuretyData.getAirlineStatus(airlineAddress);
+    }
+
+    function authorizePendingAirlineRegistration(
+        address airlineAddress
+    ) public requireIsOperational {
+        require(
+            !airlineAuthorizations[airlineAddress][msg.sender],
+            "Authorizer has already voted."
+        );
+
+        address[] memory registeredAirlines = flightSuretyData
+            .getRegisteredAirlines();
+
+        if (registeredAirlines.length < 4) {
+            flightSuretyData.setAirlineRegistered(airlineAddress);
+        } else {
+            airlineAuthorizations[airlineAddress][msg.sender] = true;
+            if (
+                countAirlineAuthorizations(airlineAddress) >=
+                registeredAirlines.length / 2 + 1
+            ) {
+                flightSuretyData.setAirlineRegistered(airlineAddress);
+            }
+        }
+    }
+
+    function countAirlineAuthorizations(
+        address airlineAddress
+    ) internal view returns (uint256) {
+        uint256 count = 0;
+        address[] memory registeredAirlines = flightSuretyData
+            .getRegisteredAirlines();
+
+        for (uint256 i = 0; i < registeredAirlines.length; i++) {
+            if (airlineAuthorizations[airlineAddress][registeredAirlines[i]]) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -320,4 +375,18 @@ contract FlightSuretyData {
     function isOperational() public view returns (bool);
 
     function setOperatingStatus(bool) external;
+
+    function registerAirline(string, address) external;
+
+    function authorizePendingAirlineRegistration(address) external;
+
+    function getAirlineStatus(
+        address
+    ) external view returns (bool, bool, string, address);
+
+    function getRegisteredAirlines() external view returns (address[]);
+
+    function setAirlineRegistered(address) external;
+
+    function setAirlineFunded(address) external;
 }

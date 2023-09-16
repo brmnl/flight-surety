@@ -66,4 +66,24 @@ export default class Contract {
         callback(error, payload);
       });
   }
+
+  registerAirline(airlineAddress, airlineName, callback) {
+    let self = this;
+    let payload = {
+      airline: airlineAddress,
+      name: airlineName,
+    };
+    self.flightSuretyApp.methods
+      .registerAirline(payload.name, payload.airline)
+      .send({ from: airlineAddress }, (error, result) => {
+        callback(error, payload);
+      });
+  }
+
+  getAirlineStatus(airlineAddress, callback) {
+    let self = this;
+    self.flightSuretyApp.methods
+      .getAirlineStatus(airlineAddress)
+      .call({ from: airlineAddress }, callback);
+  }
 }

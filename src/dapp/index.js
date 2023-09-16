@@ -34,6 +34,48 @@ import TestAddreses from "./addresses.json";
       });
     });
 
+    // Register Airline
+    DOM.elid("registerAirline").addEventListener("click", () => {
+      let airlineAddress = DOM.elid("airlinesActAsAccount").value;
+      let airlineName = DOM.elid("airlinesName").value;
+
+      contract.registerAirline(airlineAddress, airlineName, (error, result) => {
+        display(
+          [
+            {
+              label: "Register Airline",
+              error: error,
+              value: result.airline + " " + result.name,
+            },
+          ],
+          "airlines-status"
+        );
+      });
+    });
+
+    // Get Airline Status
+    DOM.elid("getAirlineStatus").addEventListener("click", () => {
+      let airlineAddress = DOM.elid("airlinesActAsAccount").value;
+      contract.getAirlineStatus(airlineAddress, (error, result) => {
+        console.log(error, result);
+        // extract values from result
+        const { 0: registered, 1: funded, 2: name, 3: address } = result;
+        display(
+          [
+            {
+              label: "Airline Status",
+              error: error,
+              value: `address: ${address},  
+                      name: ${name}, 
+                      registered: ${registered},
+                      funded: ${funded}`,
+            },
+          ],
+          "airlines-status"
+        );
+      });
+    });
+
     // Set Operational Status
     DOM.elid("submit-status-change").addEventListener("click", () => {
       let opsStatus = null;

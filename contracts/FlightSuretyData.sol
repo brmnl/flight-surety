@@ -16,6 +16,7 @@ contract FlightSuretyData {
     uint256 private contractAssets = 0;
     mapping(address => uint256) private customerAssets;
     mapping(address => Airline) private airlines;
+    address[] public registeredAirlines;
 
     struct Airline {
         bool registered;
@@ -41,6 +42,7 @@ contract FlightSuretyData {
             name: firstAirlineName,
             addr: firstAirlineAddr
         });
+        registeredAirlines.push(firstAirlineAddr);
     }
 
     /********************************************************************************************/
@@ -122,17 +124,59 @@ contract FlightSuretyData {
     function registerAirline(
         string airlineName,
         address airlineAddress
-    ) external isAuthorized requireIsOperational {
+    ) external requireIsOperational {
         require(
             !airlines[airlineAddress].registered,
             "Airline is already registered."
         );
         airlines[airlineAddress] = Airline({
-            registered: true,
+            registered: false,
             funded: false,
             name: airlineName,
             addr: airlineAddress
         });
+    }
+
+    function setAirlineRegistered(
+        address airlineAddress
+    ) external isAuthorized requireIsOperational {
+        require(
+            !airlines[airlineAddress].registered,
+            "Airline is already registered."
+        );
+        airlines[airlineAddress].registered = true;
+        registeredAirlines.push(airlineAddress);
+    }
+
+    function setAirlineFunded(
+        address airlineAddress
+    ) external isAuthorized requireIsOperational {
+        require(
+            !airlines[airlineAddress].funded,
+            "Airline has already status funded"
+        );
+        airlines[airlineAddress].funded = true;
+    }
+
+    function getRegisteredAirlines()
+        external
+        view
+        isAuthorized
+        requireIsOperational
+        returns (address[])
+    {
+        return registeredAirlines;
+    }
+
+    function getAirlineStatus(
+        address airlineAddress
+    ) external view requireIsOperational returns (bool, bool, string, address) {
+        return (
+            airlines[airlineAddress].registered,
+            airlines[airlineAddress].funded,
+            airlines[airlineAddress].name,
+            airlines[airlineAddress].addr
+        );
     }
 
     /**
@@ -157,7 +201,18 @@ contract FlightSuretyData {
      *      resulting in insurance payouts, the contract should be self-sustaining
      *
      */
-    function fund() public payable {}
+
+    // Airline after registering needs to fund itself with at least 10 ether to get status funded
+    function fund() public payable {
+        require(airlines[msg.sender].registered, "Airline is not registered.");
+        require(!airlines[msg.sender].funded, "Airline is already funded.");
+        require(
+            msg.value >= 10 ether,
+            "Airline needs to fund itself with at least 10 ether"
+        );
+        airlines[msg.sender].funded = true;
+        contractAssets = contractAssets.add(msg.value);
+    }
 
     function getFlightKey(
         address airline,
