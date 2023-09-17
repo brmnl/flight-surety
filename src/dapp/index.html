@@ -22,7 +22,7 @@
 
     <main class="container shadow-lg first-container">
         <h2>Operational Status</h2>
-        <h5 class="mb-5">Check if contract is operational or change status</h5>
+        <h5 class="mb-4">Check if contract is operational or change status</h5>
 
         <div class="input-group mb-3">
             <div class="input-group-prepend">
@@ -42,15 +42,15 @@
                 <option value="1">true</option>
                 <option value="0">false</option>
             </select>
-            <btn class="btn btn-dark ml-3 " id="submit-status-change">Set Status</btn>
+            <btn class="btn btn-dark ml-3" id="submit-status-change">Set Status</btn>
         </div>
 
         <div id="ops-status" class="top-5"></div>
     </main>
 
-    <main class="container shadow-lg last-container ">
+    <main class="container shadow-lg">
         <h2>Oracles</h2>
-        <h5 class="mb-5">Trigger oracles</h5>
+        <h5 class="mb-4">Trigger oracles</h5>
 
         <div class="input-group mb-3">
             <div class="input-group-prepend">
@@ -62,6 +62,58 @@
         </div>
 
         <div id="display-wrapper" class="top-5"></div>
+    </main>
+
+    <main class="container shadow-lg last-container">
+        <h2>Airlines</h2>
+        <h5>Airline Management</h5>
+
+        <p class="mb-4">To register, or fund an airline, or to get its status, choose the airline address in <b>Act as
+                Account</b>, and leave the Target Account empty. If you want to authorize a pending airline
+            registration, select the authorizing airline in <b>Act as Account</b>, and the airline to be authorized in
+            <b>Target Account</b>.
+        </p>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="airlinesActAsAccount">Act as Account</label>
+            </div>
+            <select class="custom-select rounded addroptions" id="airlinesActAsAccount">
+                <option selected="">Select account ...</option>
+            </select>
+            <btn class="btn btn-dark ml-3" id="getAirlineStatus">Get Airline Status</btn>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="airlinesTargetAccount">Target Account</label>
+            </div>
+            <select class="custom-select rounded addroptions" id="airlinesTargetAccount">
+                <option selected="">Select account ...</option>
+            </select>
+            <btn class="btn btn-dark ml-3" id="authorizeAirline">Authorize Airline</btn>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">Airline Name (only when
+                    registering)</span>
+            </div>
+            <input type="text" id="airlinesName" class="form-control" aria-label="Airline Name (only when registering)"
+                aria-describedby="inputGroup-sizing-default">
+            <btn class="btn btn-dark" id="registerAirline">Register Airline</btn>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">Fund with Ether (only when funding)</span>
+            </div>
+            <input type="text" id="airlinesEther" class="form-control" aria-label="Fund with Ether (only when funding)"
+                aria-describedby="inputGroup-sizing-default">
+            <btn class="btn btn-dark" id="fundAirline">Fund Airline</btn>
+        </div>
+
+        <div id="airlines-status" class="top-5"></div>
     </main>
 
 </body>

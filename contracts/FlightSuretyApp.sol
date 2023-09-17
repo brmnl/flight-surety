@@ -24,6 +24,9 @@ contract FlightSuretyApp {
     uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
+    // Airline constants
+    uint256 private constant MIN_FUNDING = 10 * 1000000000000000000; // 10 ether
+
     address private contractOwner; // Account used to deploy contract
     FlightSuretyData flightSuretyData;
 
@@ -34,6 +37,7 @@ contract FlightSuretyApp {
         address airline;
     }
     mapping(bytes32 => Flight) private flights;
+    mapping(address => address[]) private airlineMultiPartyConsensus;
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -90,6 +94,30 @@ contract FlightSuretyApp {
     }
 
     /********************************************************************************************/
+    /*                                     EVENTS                             */
+    /********************************************************************************************/
+
+    event AirlineRegistered(address addr);
+    event AirlineFunded(address airline, uint256 funding);
+
+    // TODO: To be modified and removed if not needed
+    event FlightRegistered(
+        address airline,
+        string flightName,
+        uint256 departureTime
+    );
+
+    // TODO: To be modified and removed if not needed
+    event InsuranceBought(
+        address airline,
+        string flight,
+        uint256 timestamp,
+        address passenger,
+        uint256 amount,
+        uint256 multiplier
+    );
+
+    /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
@@ -97,12 +125,70 @@ contract FlightSuretyApp {
      * @dev Add an airline to the registration queue
      *
      */
-    function registerAirline()
-        external
-        pure
-        returns (bool success, uint256 votes)
-    {
-        return (success, 0);
+
+    function registerAirline(
+        string airlineName,
+        address airlineAddress
+    ) public requireIsOperational {
+        flightSuretyData.registerAirline(airlineName, airlineAddress);
+    }
+
+    function getAirlineStatus(
+        address airlineAddress
+    ) public view requireIsOperational returns (bool, bool, string, address) {
+        return flightSuretyData.getAirlineStatus(airlineAddress);
+    }
+
+    function authorizePendingAirlineRegistration(
+        address airlineAddress
+    ) public requireIsOperational {
+        bool duplicate = false;
+        for (
+            uint i = 0;
+            i < airlineMultiPartyConsensus[airlineAddress].length;
+            i++
+        ) {
+            if (airlineMultiPartyConsensus[airlineAddress][i] == msg.sender) {
+                duplicate = true;
+            }
+        }
+
+        require(!duplicate, "Authorizer has already voted for this airline.");
+
+        address[] memory registeredAirlines = flightSuretyData
+            .getRegisteredAirlines();
+
+        if (registeredAirlines.length < 4) {
+            flightSuretyData.setAirlineRegistered(airlineAddress);
+            emit AirlineRegistered(airlineAddress);
+        } else {
+            airlineMultiPartyConsensus[airlineAddress].push(msg.sender);
+
+            if (
+                airlineMultiPartyConsensus[airlineAddress].length <
+                registeredAirlines.length / 2 + 1
+            ) {
+                airlineMultiPartyConsensus[airlineAddress].push(msg.sender);
+            }
+
+            if (
+                airlineMultiPartyConsensus[airlineAddress].length >=
+                registeredAirlines.length / 2 + 1
+            ) {
+                flightSuretyData.setAirlineRegistered(airlineAddress);
+                emit AirlineRegistered(airlineAddress);
+            }
+        }
+    }
+
+    function fund() public payable requireIsOperational {
+        require(
+            msg.value >= MIN_FUNDING,
+            "Airline funding must be at least 10 ether."
+        );
+
+        flightSuretyData.fund(msg.sender, msg.value);
+        emit AirlineFunded(msg.sender, msg.value);
     }
 
     /**
@@ -203,6 +289,12 @@ contract FlightSuretyApp {
     function registerOracle() external payable {
         // Require registration fee
         require(msg.value >= REGISTRATION_FEE, "Registration fee is required");
+
+        // Check if registering Oracle is already registered
+        require(
+            oracles[msg.sender].isRegistered != true,
+            "Oracle is already registered"
+        );
 
         uint8[3] memory indexes = generateIndexes(msg.sender);
 
@@ -314,4 +406,20 @@ contract FlightSuretyData {
     function isOperational() public view returns (bool);
 
     function setOperatingStatus(bool) external;
+
+    function registerAirline(string, address) external;
+
+    function authorizePendingAirlineRegistration(address) external;
+
+    function getAirlineStatus(
+        address
+    ) external view returns (bool, bool, string, address);
+
+    function getRegisteredAirlines() external view returns (address[]);
+
+    function setAirlineRegistered(address) external;
+
+    function setAirlineFunded(address) external;
+
+    function fund(address, uint256) public payable;
 }

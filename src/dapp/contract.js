@@ -66,4 +66,55 @@ export default class Contract {
         callback(error, payload);
       });
   }
+
+  registerAirline(airlineAddress, airlineName, callback) {
+    let self = this;
+    let payload = {
+      airline: airlineAddress,
+      name: airlineName,
+    };
+    self.flightSuretyApp.methods
+      .registerAirline(payload.name, payload.airline)
+      .send({ from: airlineAddress }, (error, result) => {
+        callback(error, payload);
+      });
+  }
+
+  authorizePendingAirlineRegistration(authorizer, authorized, callback) {
+    let self = this;
+    let payload = {
+      authorizer: authorizer,
+      authorized: authorized,
+    };
+    self.flightSuretyApp.methods
+      .authorizePendingAirlineRegistration(payload.authorized)
+      .send({ from: authorizer, gas: 500000 }, (error, result) => {
+        callback(error, payload);
+      });
+  }
+
+  fund(airlineAddress, airlineEther, callback) {
+    let self = this;
+    let payload = {
+      airline: airlineAddress,
+      ether: airlineEther,
+    };
+
+    self.flightSuretyApp.methods.fund().send(
+      {
+        from: airlineAddress,
+        value: Web3.utils.toWei(airlineEther, "ether"),
+      },
+      (error, result) => {
+        callback(error, payload);
+      }
+    );
+  }
+
+  getAirlineStatus(airlineAddress, callback) {
+    let self = this;
+    self.flightSuretyApp.methods
+      .getAirlineStatus(airlineAddress)
+      .call({ from: airlineAddress }, callback);
+  }
 }
