@@ -24,6 +24,9 @@ contract FlightSuretyApp {
     uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
+    // Airline constants
+    uint256 private constant MIN_FUNDING = 10 * 1000000000000000000; // 10 ether
+
     address private contractOwner; // Account used to deploy contract
     FlightSuretyData flightSuretyData;
 
@@ -34,7 +37,7 @@ contract FlightSuretyApp {
         address airline;
     }
     mapping(bytes32 => Flight) private flights;
-    mapping(address => mapping(address => bool)) public airlineAuthorizations;
+    mapping(address => address[]) private airlineMultiPartyConsensus;
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -91,6 +94,30 @@ contract FlightSuretyApp {
     }
 
     /********************************************************************************************/
+    /*                                     EVENTS                             */
+    /********************************************************************************************/
+
+    event AirlineRegistered(address addr);
+    event AirlineFunded(address airline, uint256 funding);
+
+    // TODO: To be modified and removed if not needed
+    event FlightRegistered(
+        address airline,
+        string flightName,
+        uint256 departureTime
+    );
+
+    // TODO: To be modified and removed if not needed
+    event InsuranceBought(
+        address airline,
+        string flight,
+        uint256 timestamp,
+        address passenger,
+        uint256 amount,
+        uint256 multiplier
+    );
+
+    /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
@@ -98,15 +125,6 @@ contract FlightSuretyApp {
      * @dev Add an airline to the registration queue
      *
      */
-
-    /*  OLD BLOCK --------REMOVE LATER --- REMOVE LATER ---- REMOVE LATER ----- REMOVE LATER   
-    function registerAirline()
-        external
-        pure
-        returns (bool success, uint256 votes)
-    {
-        return (success, 0);
-    } */
 
     function registerAirline(
         string airlineName,
@@ -124,40 +142,53 @@ contract FlightSuretyApp {
     function authorizePendingAirlineRegistration(
         address airlineAddress
     ) public requireIsOperational {
-        require(
-            !airlineAuthorizations[airlineAddress][msg.sender],
-            "Authorizer has already voted."
-        );
+        bool duplicate = false;
+        for (
+            uint i = 0;
+            i < airlineMultiPartyConsensus[airlineAddress].length;
+            i++
+        ) {
+            if (airlineMultiPartyConsensus[airlineAddress][i] == msg.sender) {
+                duplicate = true;
+            }
+        }
+
+        require(!duplicate, "Authorizer has already voted for this airline.");
 
         address[] memory registeredAirlines = flightSuretyData
             .getRegisteredAirlines();
 
         if (registeredAirlines.length < 4) {
             flightSuretyData.setAirlineRegistered(airlineAddress);
+            emit AirlineRegistered(airlineAddress);
         } else {
-            airlineAuthorizations[airlineAddress][msg.sender] = true;
+            airlineMultiPartyConsensus[airlineAddress].push(msg.sender);
+
             if (
-                countAirlineAuthorizations(airlineAddress) >=
+                airlineMultiPartyConsensus[airlineAddress].length <
+                registeredAirlines.length / 2 + 1
+            ) {
+                airlineMultiPartyConsensus[airlineAddress].push(msg.sender);
+            }
+
+            if (
+                airlineMultiPartyConsensus[airlineAddress].length >=
                 registeredAirlines.length / 2 + 1
             ) {
                 flightSuretyData.setAirlineRegistered(airlineAddress);
+                emit AirlineRegistered(airlineAddress);
             }
         }
     }
 
-    function countAirlineAuthorizations(
-        address airlineAddress
-    ) internal view returns (uint256) {
-        uint256 count = 0;
-        address[] memory registeredAirlines = flightSuretyData
-            .getRegisteredAirlines();
+    function fund() public payable requireIsOperational {
+        require(
+            msg.value >= MIN_FUNDING,
+            "Airline funding must be at least 10 ether."
+        );
 
-        for (uint256 i = 0; i < registeredAirlines.length; i++) {
-            if (airlineAuthorizations[airlineAddress][registeredAirlines[i]]) {
-                count++;
-            }
-        }
-        return count;
+        flightSuretyData.fund(msg.sender, msg.value);
+        emit AirlineFunded(msg.sender, msg.value);
     }
 
     /**
@@ -389,4 +420,6 @@ contract FlightSuretyData {
     function setAirlineRegistered(address) external;
 
     function setAirlineFunded(address) external;
+
+    function fund(address, uint256) public payable;
 }

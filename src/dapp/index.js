@@ -76,6 +76,48 @@ import TestAddreses from "./addresses.json";
       });
     });
 
+    // Authorize Airline
+    DOM.elid("authorizeAirline").addEventListener("click", () => {
+      let authorizerAddress = DOM.elid("airlinesActAsAccount").value;
+      let authorizedAddress = DOM.elid("airlinesTargetAccount").value;
+      contract.authorizePendingAirlineRegistration(
+        authorizerAddress,
+        authorizedAddress,
+        (error, result) => {
+          console.log(error, result);
+          display(
+            [
+              {
+                label: "Authorize Airline",
+                error: error,
+                value: `authorizer: ${authorizerAddress}, authorized: ${authorizedAddress}`,
+              },
+            ],
+            "airlines-status"
+          );
+        }
+      );
+    });
+
+    // Fund Airline
+    DOM.elid("fundAirline").addEventListener("click", () => {
+      let airlineAddress = DOM.elid("airlinesActAsAccount").value;
+      let airlineEther = DOM.elid("airlinesEther").value;
+      contract.fund(airlineAddress, airlineEther, (error, result) => {
+        console.log(error, result);
+        display(
+          [
+            {
+              label: "Fund Airline",
+              error: error,
+              value: `address: ${airlineAddress}, ether: ${airlineEther}`,
+            },
+          ],
+          "airlines-status"
+        );
+      });
+    });
+
     // Set Operational Status
     DOM.elid("submit-status-change").addEventListener("click", () => {
       let opsStatus = null;

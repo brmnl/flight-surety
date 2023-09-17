@@ -37,12 +37,13 @@ contract FlightSuretyData {
         contractOwner = msg.sender;
         authorizedCaller[contractOwner] = true;
         airlines[firstAirlineAddr] = Airline({
-            registered: true,
+            registered: false,
             funded: false,
             name: firstAirlineName,
             addr: firstAirlineAddr
         });
         registeredAirlines.push(firstAirlineAddr);
+        airlines[firstAirlineAddr].registered = true;
     }
 
     /********************************************************************************************/
@@ -139,7 +140,7 @@ contract FlightSuretyData {
 
     function setAirlineRegistered(
         address airlineAddress
-    ) external isAuthorized requireIsOperational {
+    ) external requireIsOperational {
         require(
             !airlines[airlineAddress].registered,
             "Airline is already registered."
@@ -150,7 +151,7 @@ contract FlightSuretyData {
 
     function setAirlineFunded(
         address airlineAddress
-    ) external isAuthorized requireIsOperational {
+    ) external requireIsOperational {
         require(
             !airlines[airlineAddress].funded,
             "Airline has already status funded"
@@ -161,7 +162,6 @@ contract FlightSuretyData {
     function getRegisteredAirlines()
         external
         view
-        isAuthorized
         requireIsOperational
         returns (address[])
     {
@@ -203,15 +203,15 @@ contract FlightSuretyData {
      */
 
     // Airline after registering needs to fund itself with at least 10 ether to get status funded
-    function fund() public payable {
-        require(airlines[msg.sender].registered, "Airline is not registered.");
-        require(!airlines[msg.sender].funded, "Airline is already funded.");
+    function fund(address airline, uint256 funding) public payable {
+        require(airlines[airline].registered, "Airline is not registered.");
+        require(!airlines[airline].funded, "Airline is already funded.");
         require(
-            msg.value >= 10 ether,
+            funding >= 10 ether,
             "Airline needs to fund itself with at least 10 ether"
         );
-        airlines[msg.sender].funded = true;
-        contractAssets = contractAssets.add(msg.value);
+        airlines[airline].funded = true;
+        contractAssets = contractAssets.add(funding);
     }
 
     function getFlightKey(
@@ -227,6 +227,6 @@ contract FlightSuretyData {
      *
      */
     function() external payable {
-        fund();
+        fund(msg.sender, msg.value);
     }
 }
