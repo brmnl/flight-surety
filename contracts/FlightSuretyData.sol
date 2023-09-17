@@ -24,6 +24,12 @@ contract FlightSuretyData {
         address airline;
     }
 
+    struct FlightInsurance {
+        address passenger;
+        address airline;
+        uint coverage;
+    }
+
     address private contractOwner; // Account used to deploy contract
     bool private operational = true; // Blocks all state changes throughout the contract if false
     mapping(address => bool) private authorizedCaller;
@@ -34,8 +40,9 @@ contract FlightSuretyData {
     address[] public registeredAirlines;
 
     mapping(bytes32 => Flight) private flights;
-    // TODO: mapping (address => bytes32[]) private flightsByAirlines;
+    mapping(address => bytes32[]) public airlineFlights;
     bytes32[] regFlights = new bytes32[](0);
+    mapping(bytes32 => FlightInsurance[]) insuredPassenger;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -212,13 +219,30 @@ contract FlightSuretyData {
         });
 
         regFlights.push(flightKey);
+        airlineFlights[airline].push(flightKey);
     }
 
     /**
      * @dev Buy insurance for a flight
      *
      */
-    function buy() external payable {}
+
+    function buy(
+        address passenger,
+        uint256 coverage,
+        bytes32 flightKey,
+        address airline
+    ) external payable requireIsOperational {
+        require(flights[flightKey].registered, "Flight is not registered.");
+        require(coverage <= 1 ether, "Coverage cannot be more than 1 ether.");
+        insuredPassenger[flightKey].push(
+            FlightInsurance({
+                passenger: passenger,
+                airline: airline,
+                coverage: coverage
+            })
+        );
+    }
 
     /**
      *  @dev Credits payouts to insurees

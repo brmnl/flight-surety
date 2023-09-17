@@ -16,6 +16,26 @@ import TestAddreses from "./addresses.json";
       );
     });
 
+    contract.getRegisteredAirlines((error, result) => {
+      console.log(error, result);
+
+      const selectElement = document.querySelector(".listregisteredairlines");
+
+      selectElement.innerHTML = "";
+
+      let airlineName = null;
+      result.forEach((address) => {
+        contract.getAirlineStatus(address, (error, resultAirline) => {
+          console.log(error, resultAirline);
+          airlineName = resultAirline[2];
+          const option = document.createElement("option");
+          option.value = address;
+          option.textContent = `${airlineName}: ${address}`;
+          selectElement.appendChild(option);
+        });
+      });
+    });
+
     // User-submitted transaction
     DOM.elid("submit-oracle").addEventListener("click", () => {
       let flight = DOM.elid("flight-number").value;

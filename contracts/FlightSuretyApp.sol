@@ -99,22 +99,13 @@ contract FlightSuretyApp {
 
     event AirlineRegistered(address addr);
     event AirlineFunded(address airline, uint256 funding);
-
-    // TODO: To be modified and removed if not needed
-    event FlightRegistered(
-        address airline,
-        string flightName,
-        uint256 departureTime
-    );
-
-    // TODO: To be modified and removed if not needed
+    event FlightRegistered(address airline, string code, uint256 departure);
     event InsuranceBought(
-        address airline,
-        string flight,
-        uint256 timestamp,
         address passenger,
-        uint256 amount,
-        uint256 multiplier
+        address airline,
+        string code,
+        uint256 departure,
+        uint256 coverage
     );
 
     /********************************************************************************************/
@@ -137,6 +128,15 @@ contract FlightSuretyApp {
         address airlineAddress
     ) public view requireIsOperational returns (bool, bool, string, address) {
         return flightSuretyData.getAirlineStatus(airlineAddress);
+    }
+
+    function getRegisteredAirlines()
+        public
+        view
+        requireIsOperational
+        returns (address[])
+    {
+        return flightSuretyData.getRegisteredAirlines();
     }
 
     function authorizePendingAirlineRegistration(
@@ -181,11 +181,15 @@ contract FlightSuretyApp {
         }
     }
 
-    // Internal function that transfers all balance of this contract to the data contract
-    function transferToDataContract() internal {
-        address(uint160(address(flightSuretyData))).transfer(
-            address(this).balance
-        );
+    function buy(
+        address airline,
+        string code,
+        uint256 departure
+    ) external payable requireIsOperational {
+        bytes32 flightKey = getFlightKey(airline, code, departure);
+        flightSuretyData.buy(msg.sender, msg.value, flightKey, airline);
+        address(flightSuretyData).transfer(msg.value);
+        emit InsuranceBought(msg.sender, airline, code, departure, msg.value);
     }
 
     function fund(
@@ -442,4 +446,6 @@ contract FlightSuretyData {
     function fund(address, uint256) public payable;
 
     function registerFlight(address, string, uint256) external;
+
+    function buy(address, uint256, bytes32, address) external payable;
 }

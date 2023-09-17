@@ -41,6 +41,13 @@ export default class Contract {
       .call({ from: self.owner }, callback);
   }
 
+  getRegisteredAirlines(callback) {
+    let self = this;
+    self.flightSuretyApp.methods
+      .getRegisteredAirlines()
+      .call({ from: self.owner }, callback);
+  }
+
   setOperatingStatus(opsStatus, fromAddress, callback) {
     let self = this;
     let payload = {
