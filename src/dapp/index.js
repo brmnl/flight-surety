@@ -118,6 +118,31 @@ import TestAddreses from "./addresses.json";
       });
     });
 
+    // Register Flight
+    DOM.elid("registerFlight").addEventListener("click", () => {
+      let flightCode = DOM.elid("flightCodes").value;
+      let departure = DOM.elid("departure").value;
+      let airline = DOM.elid("flightsActAsAccount").value;
+      contract.registerFlight(
+        airline,
+        flightCode,
+        departure,
+        (error, result) => {
+          console.log(error, result);
+          display(
+            [
+              {
+                label: "Register Flight",
+                error: error,
+                value: `airline: ${airline}, flightCode: ${flightCode}, departure: ${departure}`,
+              },
+            ],
+            "flight-status"
+          );
+        }
+      );
+    });
+
     // Set Operational Status
     DOM.elid("submit-status-change").addEventListener("click", () => {
       let opsStatus = null;

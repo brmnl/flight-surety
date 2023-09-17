@@ -9,6 +9,21 @@ contract FlightSuretyData {
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
+    struct Airline {
+        bool registered;
+        bool funded;
+        string name;
+        address addr;
+    }
+
+    struct Flight {
+        bool registered;
+        string code;
+        uint8 statusCode;
+        uint256 departure;
+        address airline;
+    }
+
     address private contractOwner; // Account used to deploy contract
     bool private operational = true; // Blocks all state changes throughout the contract if false
     mapping(address => bool) private authorizedCaller;
@@ -18,12 +33,9 @@ contract FlightSuretyData {
     mapping(address => Airline) private airlines;
     address[] public registeredAirlines;
 
-    struct Airline {
-        bool registered;
-        bool funded;
-        string name;
-        address addr;
-    }
+    mapping(bytes32 => Flight) private flights;
+    // TODO: mapping (address => bytes32[]) private flightsByAirlines;
+    bytes32[] regFlights = new bytes32[](0);
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -179,6 +191,29 @@ contract FlightSuretyData {
         );
     }
 
+    function registerFlight(
+        address airline,
+        string code,
+        uint256 timestamp
+    ) external requireIsOperational {
+        bytes32 flightKey = getFlightKey(airline, code, timestamp);
+        require(!flights[flightKey].registered, "This flight already exists.");
+        require(
+            airlines[airline].registered && airlines[airline].funded,
+            "Airline is not registered and/or funded."
+        );
+
+        flights[flightKey] = Flight({
+            registered: true,
+            code: code,
+            statusCode: 0,
+            departure: timestamp,
+            airline: airline
+        });
+
+        regFlights.push(flightKey);
+    }
+
     /**
      * @dev Buy insurance for a flight
      *
@@ -227,6 +262,6 @@ contract FlightSuretyData {
      *
      */
     function() external payable {
-        fund(msg.sender, msg.value);
+        // fund(msg.sender, msg.value);
     }
 }

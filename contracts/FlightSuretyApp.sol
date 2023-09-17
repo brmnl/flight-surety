@@ -181,21 +181,39 @@ contract FlightSuretyApp {
         }
     }
 
-    function fund() public payable requireIsOperational {
+    // Internal function that transfers all balance of this contract to the data contract
+    function transferToDataContract() internal {
+        address(uint160(address(flightSuretyData))).transfer(
+            address(this).balance
+        );
+    }
+
+    function fund(
+        address sender,
+        uint sum
+    ) public payable requireIsOperational {
         require(
             msg.value >= MIN_FUNDING,
             "Airline funding must be at least 10 ether."
         );
 
-        flightSuretyData.fund(msg.sender, msg.value);
-        emit AirlineFunded(msg.sender, msg.value);
+        flightSuretyData.fund(sender, sum);
+        address(flightSuretyData).transfer(msg.value);
+        emit AirlineFunded(sender, sum);
     }
 
     /**
      * @dev Register a future flight for insuring.
      *
      */
-    function registerFlight() external pure {}
+    function registerFlight(
+        address airline,
+        string code,
+        uint256 departure
+    ) public requireIsOperational {
+        flightSuretyData.registerFlight(airline, code, departure);
+        emit FlightRegistered(airline, code, departure);
+    }
 
     /**
      * @dev Called after oracle has updated flight status
@@ -422,4 +440,6 @@ contract FlightSuretyData {
     function setAirlineFunded(address) external;
 
     function fund(address, uint256) public payable;
+
+    function registerFlight(address, string, uint256) external;
 }
