@@ -107,6 +107,12 @@ contract FlightSuretyApp {
         uint256 departure,
         uint256 coverage
     );
+    event FlightUpdated(
+        address airline,
+        string flight,
+        uint256 timestamp,
+        uint8 statusCode
+    );
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
@@ -116,6 +122,16 @@ contract FlightSuretyApp {
      * @dev Add an airline to the registration queue
      *
      */
+
+    function getCreditBalance(
+        address passenger
+    ) public view requireIsOperational {
+        flightSuretyData.getCreditBalance(passenger);
+    }
+
+    function pay(address passenger) public requireIsOperational {
+        flightSuretyData.pay(passenger);
+    }
 
     function registerAirline(
         string airlineName,
@@ -188,7 +204,6 @@ contract FlightSuretyApp {
         uint256 departure,
         uint coverage
     ) external payable requireIsOperational {
-        bytes32 flightKey = getFlightKey(airline, flight, departure);
         flightSuretyData.buy(passenger, airline, flight, departure, coverage);
         address(flightSuretyData).transfer(msg.value);
         emit InsuranceBought(passenger, airline, flight, departure, coverage);
@@ -225,12 +240,21 @@ contract FlightSuretyApp {
      * @dev Called after oracle has updated flight status
      *
      */
+
     function processFlightStatus(
         address airline,
         string memory flight,
         uint256 timestamp,
         uint8 statusCode
-    ) internal pure {}
+    ) internal requireIsOperational {
+        flightSuretyData.processFlightStatus(
+            airline,
+            flight,
+            timestamp,
+            statusCode
+        );
+        emit FlightUpdated(airline, flight, timestamp, statusCode);
+    }
 
     // Generate a request for oracles to fetch flight information
     function fetchFlightStatus(
@@ -450,4 +474,10 @@ contract FlightSuretyData {
     function registerFlight(address, string, uint256) external;
 
     function buy(address, address, string, uint256, uint) external payable;
+
+    function processFlightStatus(address, string, uint256, uint8) external;
+
+    function pay(address) external;
+
+    function getCreditBalance(address) external view;
 }

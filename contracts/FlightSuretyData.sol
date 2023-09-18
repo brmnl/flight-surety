@@ -9,6 +9,17 @@ contract FlightSuretyData {
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
+    // Flight status codees
+    uint8 private constant STATUS_CODE_UNKNOWN = 0;
+    uint8 private constant STATUS_CODE_ON_TIME = 10;
+    uint8 private constant STATUS_CODE_LATE_AIRLINE = 20;
+    uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
+    uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
+    uint8 private constant STATUS_CODE_LATE_OTHER = 50;
+
+    // Airline constants
+    uint256 private constant MIN_FUNDING = 10 * 1000000000000000000; // 10 ether
+
     struct Airline {
         bool registered;
         bool funded;
@@ -30,6 +41,11 @@ contract FlightSuretyData {
         uint coverage;
     }
 
+    struct CreditBalance {
+        address passenger;
+        uint credit;
+    }
+
     address private contractOwner; // Account used to deploy contract
     bool private operational = true; // Blocks all state changes throughout the contract if false
     mapping(address => bool) private authorizedCaller;
@@ -43,6 +59,7 @@ contract FlightSuretyData {
     mapping(address => bytes32[]) public airlineFlights;
     bytes32[] regFlights = new bytes32[](0);
     mapping(bytes32 => FlightInsurance[]) insuredPassenger;
+    mapping(address => CreditBalance) private creditBalance;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -136,6 +153,12 @@ contract FlightSuretyData {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    function getCreditBalance(
+        address passenger
+    ) external view requireIsOperational {
+        creditBalance[passenger].credit;
+    }
+
     /**
      * @dev Add an airline to the registration queue
      *      Can only be called from FlightSuretyApp contract
@@ -222,6 +245,44 @@ contract FlightSuretyData {
         airlineFlights[airline].push(flightKey);
     }
 
+    function processFlightStatus(
+        address airline,
+        string flight,
+        uint256 timestamp,
+        uint8 statusCode
+    ) external requireIsOperational {
+        bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+        flights[flightKey].statusCode = statusCode;
+
+        if (statusCode == STATUS_CODE_LATE_AIRLINE) {
+            creditInsurees(airline, flight, timestamp);
+        }
+    }
+
+    /**
+     *  @dev Credits payouts to insurees
+     */
+    function creditInsurees(
+        address airline,
+        string memory flight,
+        uint256 timestamp
+    ) internal requireIsOperational {
+        bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+
+        for (uint i = 0; i < insuredPassenger[flightKey].length; i++) {
+            address passenger = insuredPassenger[flightKey][i].passenger;
+            uint credit = insuredPassenger[flightKey][i].coverage.mul(15).div(
+                10
+            );
+            insuredPassenger[flightKey][i].coverage = 0;
+
+            creditBalance[passenger] = CreditBalance({
+                passenger: passenger,
+                credit: credit
+            });
+        }
+    }
+
     /**
      * @dev Buy insurance for a flight
      *
@@ -247,15 +308,24 @@ contract FlightSuretyData {
     }
 
     /**
-     *  @dev Credits payouts to insurees
-     */
-    function creditInsurees() external pure {}
-
-    /**
      *  @dev Transfers eligible payout funds to insuree
      *
      */
-    function pay() external pure {}
+
+    function pay(address passenger) external requireIsOperational {
+        require(
+            creditBalance[passenger].credit > 0,
+            "No credit available for withdrawal. "
+        );
+        require(
+            passenger == tx.origin,
+            "Passenger must be the caller of this function."
+        );
+
+        uint256 amount = creditBalance[passenger].credit;
+        creditBalance[passenger].credit = 0;
+        address(uint160(passenger)).transfer(amount);
+    }
 
     /**
      * @dev Initial funding for the insurance. Unless there are too many delayed flights

@@ -19,37 +19,107 @@ import TestAddreses from "./addresses.json";
     contract.getRegisteredAirlines((error, result) => {
       console.log(error, result);
 
-      const selectElement = document.querySelector(".listregisteredairlines");
+      const selectElements = document.querySelectorAll(
+        ".listregisteredairlines"
+      );
 
-      selectElement.innerHTML = "";
+      selectElements.forEach((selectElement) => {
+        selectElement.innerHTML = "";
 
-      let airlineName = null;
-      result.forEach((address) => {
-        contract.getAirlineStatus(address, (error, resultAirline) => {
-          console.log(error, resultAirline);
-          airlineName = resultAirline[2];
-          const option = document.createElement("option");
-          option.value = address;
-          option.textContent = `${airlineName}: ${address}`;
-          selectElement.appendChild(option);
+        let airlineName = null;
+        result.forEach((address) => {
+          contract.getAirlineStatus(address, (error, resultAirline) => {
+            console.log(error, resultAirline);
+            airlineName = resultAirline[2];
+            const option = document.createElement("option");
+            option.value = address;
+            option.textContent = `${airlineName}: ${address}`;
+            selectElement.appendChild(option);
+          });
         });
+      });
+    });
+
+    // Get Credit Balance
+    DOM.elid("getCreditBalance").addEventListener("click", () => {
+      let passenger = DOM.elid("passengersActAsAccount").value;
+      contract.getCreditBalance(passenger, (error, result) => {
+        console.log(error, result);
+        display(
+          [
+            {
+              label: "getCreditBalance",
+              error: error,
+              value: `result: ${result}`,
+            },
+          ],
+          "passenger-status"
+        );
+      });
+    });
+
+    // Withdraw Credit Balance
+    DOM.elid("withdrawCreditBalance").addEventListener("click", () => {
+      let passenger = DOM.elid("passengersActAsAccount").value;
+      contract.pay(passenger, (error, result) => {
+        console.log(error, result);
+        display(
+          [
+            {
+              label: "withdrawCreditBalance",
+              error: error,
+              value: `result: ${result}`,
+            },
+          ],
+          "passenger-status"
+        );
       });
     });
 
     // User-submitted transaction
     DOM.elid("submit-oracle").addEventListener("click", () => {
-      let flight = DOM.elid("flight-number").value;
+      let airline = DOM.elid("oracleAirline").value;
+      let flight = DOM.elid("oracleCode").value;
+      let departure = DOM.elid("oracleTime").value;
       // Write transaction
-      contract.fetchFlightStatus(flight, (error, result) => {
-        display_replace(
+      contract.fetchFlightStatus(
+        airline,
+        flight,
+        departure,
+        (error, result) => {
+          display(
+            [
+              {
+                label: "Fetch Flight Status",
+                error: error,
+                value:
+                  result.airline + " " + result.flight + " " + result.departure,
+              },
+            ],
+            "display-wrapper"
+          );
+        }
+      );
+    });
+
+    // Get Passenger Account Balance
+    DOM.elid("getAccountBalance").addEventListener("click", () => {
+      let passenger = DOM.elid("passengersActAsAccount").value;
+
+      contract.getAccountBalance(passenger, (error, result) => {
+        if (error) {
+          return;
+        }
+
+        display(
           [
             {
-              label: "Fetch Flight Status",
-              error: error,
-              value: result.flight + " " + result.timestamp,
+              label: "Passenger Account Balance (Wei)",
+              error: null,
+              value: result,
             },
           ],
-          "display-wrapper"
+          "passenger-status"
         );
       });
     });

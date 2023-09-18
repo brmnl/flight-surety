@@ -60,15 +60,16 @@ export default class Contract {
       });
   }
 
-  fetchFlightStatus(flight, callback) {
+  fetchFlightStatus(airline, flight, departure, callback) {
     let self = this;
     let payload = {
-      airline: self.airlines[0],
+      airline: airline,
       flight: flight,
-      timestamp: Math.floor(Date.now() / 1000),
+      departure: departure,
+      // timestamp: Math.floor(Date.now() / 1000),
     };
     self.flightSuretyApp.methods
-      .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
+      .fetchFlightStatus(payload.airline, payload.flight, payload.departure)
       .send({ from: self.owner }, (error, result) => {
         callback(error, payload);
       });
@@ -163,5 +164,26 @@ export default class Contract {
     self.flightSuretyApp.methods
       .getAirlineStatus(airlineAddress)
       .call({ from: airlineAddress }, callback);
+  }
+
+  getCreditBalance(passenger, callback) {
+    let self = this;
+    self.flightSuretyApp.methods
+      .getCreditBalance(passenger)
+      .call({ from: passenger }, callback);
+  }
+
+  getAccountBalance(passenger, callback) {
+    let self = this;
+    this.web3.eth.getBalance(passenger).then(function (balance) {
+      callback(null, balance);
+    }, callback);
+  }
+
+  pay(passenger, callback) {
+    let self = this;
+    self.flightSuretyApp.methods
+      .pay(passenger)
+      .call({ from: passenger }, callback);
   }
 }
