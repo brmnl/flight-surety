@@ -182,14 +182,16 @@ contract FlightSuretyApp {
     }
 
     function buy(
+        address passenger,
         address airline,
-        string code,
-        uint256 departure
+        string flight,
+        uint256 departure,
+        uint coverage
     ) external payable requireIsOperational {
-        bytes32 flightKey = getFlightKey(airline, code, departure);
-        flightSuretyData.buy(msg.sender, msg.value, flightKey, airline);
+        bytes32 flightKey = getFlightKey(airline, flight, departure);
+        flightSuretyData.buy(passenger, airline, flight, departure, coverage);
         address(flightSuretyData).transfer(msg.value);
-        emit InsuranceBought(msg.sender, airline, code, departure, msg.value);
+        emit InsuranceBought(passenger, airline, flight, departure, coverage);
     }
 
     function fund(
@@ -447,5 +449,5 @@ contract FlightSuretyData {
 
     function registerFlight(address, string, uint256) external;
 
-    function buy(address, uint256, bytes32, address) external payable;
+    function buy(address, address, string, uint256, uint) external payable;
 }

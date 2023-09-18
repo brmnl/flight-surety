@@ -134,6 +134,30 @@ export default class Contract {
       );
   }
 
+  buy(passenger, airline, flight, departure, coverage, callback) {
+    let self = this;
+    let payload = {
+      passenger: passenger,
+      airline: airline,
+      flight: flight,
+      departure: departure,
+      coverage: coverage,
+    };
+
+    self.flightSuretyApp.methods
+      .buy(passenger, airline, flight, departure, coverage)
+      .send(
+        {
+          from: passenger,
+          value: Web3.utils.toWei(coverage, "ether"),
+          gas: 500000,
+        },
+        (error, result) => {
+          callback(error, payload);
+        }
+      );
+  }
+
   getAirlineStatus(airlineAddress, callback) {
     let self = this;
     self.flightSuretyApp.methods

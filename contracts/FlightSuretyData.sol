@@ -229,10 +229,12 @@ contract FlightSuretyData {
 
     function buy(
         address passenger,
-        uint256 coverage,
-        bytes32 flightKey,
-        address airline
+        address airline,
+        string flight,
+        uint256 departure,
+        uint coverage
     ) external payable requireIsOperational {
+        bytes32 flightKey = getFlightKey(airline, flight, departure);
         require(flights[flightKey].registered, "Flight is not registered.");
         require(coverage <= 1 ether, "Coverage cannot be more than 1 ether.");
         insuredPassenger[flightKey].push(

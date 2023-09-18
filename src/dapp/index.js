@@ -138,6 +138,39 @@ import TestAddreses from "./addresses.json";
       });
     });
 
+    // Buy Insurance
+    DOM.elid("buyInsurance").addEventListener("click", () => {
+      let insurancePassenger = DOM.elid("passengersActAsAccount").value;
+      let insuranceAirline = DOM.elid("passengersRegisteredAirlines").value;
+      let insuranceFlight = DOM.elid("passflightCodes").value;
+      let insuranceDeparture = DOM.elid("passDeparture").value;
+      let insuranceEther = DOM.elid("passEther").value;
+      contract.buy(
+        insurancePassenger,
+        insuranceAirline,
+        insuranceFlight,
+        insuranceDeparture,
+        insuranceEther,
+        (error, result) => {
+          console.log(error, result);
+          display(
+            [
+              {
+                label: "Buy Insurance",
+                error: error,
+                value: `passenger: ${insurancePassenger}, 
+                      airline: ${insuranceAirline}, 
+                      flight: ${insuranceFlight}, 
+                      departure: ${insuranceDeparture}, 
+                      coverage: ${insuranceEther}`,
+              },
+            ],
+            "passenger-status"
+          );
+        }
+      );
+    });
+
     // Register Flight
     DOM.elid("registerFlight").addEventListener("click", () => {
       let flightCode = DOM.elid("flightCodes").value;
