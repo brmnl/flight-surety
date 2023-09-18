@@ -99,22 +99,19 @@ contract FlightSuretyApp {
 
     event AirlineRegistered(address addr);
     event AirlineFunded(address airline, uint256 funding);
-
-    // TODO: To be modified and removed if not needed
-    event FlightRegistered(
-        address airline,
-        string flightName,
-        uint256 departureTime
-    );
-
-    // TODO: To be modified and removed if not needed
+    event FlightRegistered(address airline, string code, uint256 departure);
     event InsuranceBought(
+        address passenger,
+        address airline,
+        string code,
+        uint256 departure,
+        uint256 coverage
+    );
+    event FlightUpdated(
         address airline,
         string flight,
         uint256 timestamp,
-        address passenger,
-        uint256 amount,
-        uint256 multiplier
+        uint8 statusCode
     );
 
     /********************************************************************************************/
@@ -125,6 +122,16 @@ contract FlightSuretyApp {
      * @dev Add an airline to the registration queue
      *
      */
+
+    function getCreditBalance(
+        address passenger
+    ) public view requireIsOperational {
+        flightSuretyData.getCreditBalance(passenger);
+    }
+
+    function pay(address passenger) public requireIsOperational {
+        flightSuretyData.pay(passenger);
+    }
 
     function registerAirline(
         string airlineName,
@@ -137,6 +144,15 @@ contract FlightSuretyApp {
         address airlineAddress
     ) public view requireIsOperational returns (bool, bool, string, address) {
         return flightSuretyData.getAirlineStatus(airlineAddress);
+    }
+
+    function getRegisteredAirlines()
+        public
+        view
+        requireIsOperational
+        returns (address[])
+    {
+        return flightSuretyData.getRegisteredAirlines();
     }
 
     function authorizePendingAirlineRegistration(
@@ -181,32 +197,64 @@ contract FlightSuretyApp {
         }
     }
 
-    function fund() public payable requireIsOperational {
+    function buy(
+        address passenger,
+        address airline,
+        string flight,
+        uint256 departure,
+        uint coverage
+    ) external payable requireIsOperational {
+        flightSuretyData.buy(passenger, airline, flight, departure, coverage);
+        address(flightSuretyData).transfer(msg.value);
+        emit InsuranceBought(passenger, airline, flight, departure, coverage);
+    }
+
+    function fund(
+        address sender,
+        uint sum
+    ) public payable requireIsOperational {
         require(
             msg.value >= MIN_FUNDING,
             "Airline funding must be at least 10 ether."
         );
 
-        flightSuretyData.fund(msg.sender, msg.value);
-        emit AirlineFunded(msg.sender, msg.value);
+        flightSuretyData.fund(sender, sum);
+        address(flightSuretyData).transfer(msg.value);
+        emit AirlineFunded(sender, sum);
     }
 
     /**
      * @dev Register a future flight for insuring.
      *
      */
-    function registerFlight() external pure {}
+    function registerFlight(
+        address airline,
+        string code,
+        uint256 departure
+    ) public requireIsOperational {
+        flightSuretyData.registerFlight(airline, code, departure);
+        emit FlightRegistered(airline, code, departure);
+    }
 
     /**
      * @dev Called after oracle has updated flight status
      *
      */
+
     function processFlightStatus(
         address airline,
         string memory flight,
         uint256 timestamp,
         uint8 statusCode
-    ) internal pure {}
+    ) internal requireIsOperational {
+        flightSuretyData.processFlightStatus(
+            airline,
+            flight,
+            timestamp,
+            statusCode
+        );
+        emit FlightUpdated(airline, flight, timestamp, statusCode);
+    }
 
     // Generate a request for oracles to fetch flight information
     function fetchFlightStatus(
@@ -422,4 +470,14 @@ contract FlightSuretyData {
     function setAirlineFunded(address) external;
 
     function fund(address, uint256) public payable;
+
+    function registerFlight(address, string, uint256) external;
+
+    function buy(address, address, string, uint256, uint) external payable;
+
+    function processFlightStatus(address, string, uint256, uint8) external;
+
+    function pay(address) external;
+
+    function getCreditBalance(address) external view;
 }

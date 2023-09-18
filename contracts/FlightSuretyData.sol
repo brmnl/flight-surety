@@ -9,6 +9,43 @@ contract FlightSuretyData {
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
+    // Flight status codees
+    uint8 private constant STATUS_CODE_UNKNOWN = 0;
+    uint8 private constant STATUS_CODE_ON_TIME = 10;
+    uint8 private constant STATUS_CODE_LATE_AIRLINE = 20;
+    uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
+    uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
+    uint8 private constant STATUS_CODE_LATE_OTHER = 50;
+
+    // Airline constants
+    uint256 private constant MIN_FUNDING = 10 * 1000000000000000000; // 10 ether
+
+    struct Airline {
+        bool registered;
+        bool funded;
+        string name;
+        address addr;
+    }
+
+    struct Flight {
+        bool registered;
+        string code;
+        uint8 statusCode;
+        uint256 departure;
+        address airline;
+    }
+
+    struct FlightInsurance {
+        address passenger;
+        address airline;
+        uint coverage;
+    }
+
+    struct CreditBalance {
+        address passenger;
+        uint credit;
+    }
+
     address private contractOwner; // Account used to deploy contract
     bool private operational = true; // Blocks all state changes throughout the contract if false
     mapping(address => bool) private authorizedCaller;
@@ -18,12 +55,11 @@ contract FlightSuretyData {
     mapping(address => Airline) private airlines;
     address[] public registeredAirlines;
 
-    struct Airline {
-        bool registered;
-        bool funded;
-        string name;
-        address addr;
-    }
+    mapping(bytes32 => Flight) private flights;
+    mapping(address => bytes32[]) public airlineFlights;
+    bytes32[] regFlights = new bytes32[](0);
+    mapping(bytes32 => FlightInsurance[]) insuredPassenger;
+    mapping(address => CreditBalance) private creditBalance;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -117,6 +153,12 @@ contract FlightSuretyData {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    function getCreditBalance(
+        address passenger
+    ) external view requireIsOperational {
+        creditBalance[passenger].credit;
+    }
+
     /**
      * @dev Add an airline to the registration queue
      *      Can only be called from FlightSuretyApp contract
@@ -179,22 +221,111 @@ contract FlightSuretyData {
         );
     }
 
-    /**
-     * @dev Buy insurance for a flight
-     *
-     */
-    function buy() external payable {}
+    function registerFlight(
+        address airline,
+        string code,
+        uint256 timestamp
+    ) external requireIsOperational {
+        bytes32 flightKey = getFlightKey(airline, code, timestamp);
+        require(!flights[flightKey].registered, "This flight already exists.");
+        require(
+            airlines[airline].registered && airlines[airline].funded,
+            "Airline is not registered and/or funded."
+        );
+
+        flights[flightKey] = Flight({
+            registered: true,
+            code: code,
+            statusCode: 0,
+            departure: timestamp,
+            airline: airline
+        });
+
+        regFlights.push(flightKey);
+        airlineFlights[airline].push(flightKey);
+    }
+
+    function processFlightStatus(
+        address airline,
+        string flight,
+        uint256 timestamp,
+        uint8 statusCode
+    ) external requireIsOperational {
+        bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+        flights[flightKey].statusCode = statusCode;
+
+        if (statusCode == STATUS_CODE_LATE_AIRLINE) {
+            creditInsurees(airline, flight, timestamp);
+        }
+    }
 
     /**
      *  @dev Credits payouts to insurees
      */
-    function creditInsurees() external pure {}
+    function creditInsurees(
+        address airline,
+        string memory flight,
+        uint256 timestamp
+    ) internal requireIsOperational {
+        bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+
+        for (uint i = 0; i < insuredPassenger[flightKey].length; i++) {
+            address passenger = insuredPassenger[flightKey][i].passenger;
+            uint credit = insuredPassenger[flightKey][i].coverage.mul(15).div(
+                10
+            );
+            insuredPassenger[flightKey][i].coverage = 0;
+
+            creditBalance[passenger] = CreditBalance({
+                passenger: passenger,
+                credit: credit
+            });
+        }
+    }
+
+    /**
+     * @dev Buy insurance for a flight
+     *
+     */
+
+    function buy(
+        address passenger,
+        address airline,
+        string flight,
+        uint256 departure,
+        uint coverage
+    ) external payable requireIsOperational {
+        bytes32 flightKey = getFlightKey(airline, flight, departure);
+        require(flights[flightKey].registered, "Flight is not registered.");
+        require(coverage <= 1 ether, "Coverage cannot be more than 1 ether.");
+        insuredPassenger[flightKey].push(
+            FlightInsurance({
+                passenger: passenger,
+                airline: airline,
+                coverage: coverage
+            })
+        );
+    }
 
     /**
      *  @dev Transfers eligible payout funds to insuree
      *
      */
-    function pay() external pure {}
+
+    function pay(address passenger) external requireIsOperational {
+        require(
+            creditBalance[passenger].credit > 0,
+            "No credit available for withdrawal. "
+        );
+        require(
+            passenger == tx.origin,
+            "Passenger must be the caller of this function."
+        );
+
+        uint256 amount = creditBalance[passenger].credit;
+        creditBalance[passenger].credit = 0;
+        address(uint160(passenger)).transfer(amount);
+    }
 
     /**
      * @dev Initial funding for the insurance. Unless there are too many delayed flights
@@ -227,6 +358,6 @@ contract FlightSuretyData {
      *
      */
     function() external payable {
-        fund(msg.sender, msg.value);
+        // fund(msg.sender, msg.value);
     }
 }

@@ -16,20 +16,110 @@ import TestAddreses from "./addresses.json";
       );
     });
 
-    // User-submitted transaction
-    DOM.elid("submit-oracle").addEventListener("click", () => {
-      let flight = DOM.elid("flight-number").value;
-      // Write transaction
-      contract.fetchFlightStatus(flight, (error, result) => {
-        display_replace(
+    contract.getRegisteredAirlines((error, result) => {
+      console.log(error, result);
+
+      const selectElements = document.querySelectorAll(
+        ".listregisteredairlines"
+      );
+
+      selectElements.forEach((selectElement) => {
+        selectElement.innerHTML = "";
+
+        let airlineName = null;
+        result.forEach((address) => {
+          contract.getAirlineStatus(address, (error, resultAirline) => {
+            console.log(error, resultAirline);
+            airlineName = resultAirline[2];
+            const option = document.createElement("option");
+            option.value = address;
+            option.textContent = `${airlineName}: ${address}`;
+            selectElement.appendChild(option);
+          });
+        });
+      });
+    });
+
+    // Get Credit Balance
+    DOM.elid("getCreditBalance").addEventListener("click", () => {
+      let passenger = DOM.elid("passengersActAsAccount").value;
+      contract.getCreditBalance(passenger, (error, result) => {
+        console.log(error, result);
+        display(
           [
             {
-              label: "Fetch Flight Status",
+              label: "getCreditBalance",
               error: error,
-              value: result.flight + " " + result.timestamp,
+              value: `result: ${result}`,
             },
           ],
-          "display-wrapper"
+          "passenger-status"
+        );
+      });
+    });
+
+    // Withdraw Credit Balance
+    DOM.elid("withdrawCreditBalance").addEventListener("click", () => {
+      let passenger = DOM.elid("passengersActAsAccount").value;
+      contract.pay(passenger, (error, result) => {
+        console.log(error, result);
+        display(
+          [
+            {
+              label: "withdrawCreditBalance",
+              error: error,
+              value: `result: ${result}`,
+            },
+          ],
+          "passenger-status"
+        );
+      });
+    });
+
+    // User-submitted transaction
+    DOM.elid("submit-oracle").addEventListener("click", () => {
+      let airline = DOM.elid("oracleAirline").value;
+      let flight = DOM.elid("oracleCode").value;
+      let departure = DOM.elid("oracleTime").value;
+      // Write transaction
+      contract.fetchFlightStatus(
+        airline,
+        flight,
+        departure,
+        (error, result) => {
+          display(
+            [
+              {
+                label: "Fetch Flight Status",
+                error: error,
+                value:
+                  result.airline + " " + result.flight + " " + result.departure,
+              },
+            ],
+            "display-wrapper"
+          );
+        }
+      );
+    });
+
+    // Get Passenger Account Balance
+    DOM.elid("getAccountBalance").addEventListener("click", () => {
+      let passenger = DOM.elid("passengersActAsAccount").value;
+
+      contract.getAccountBalance(passenger, (error, result) => {
+        if (error) {
+          return;
+        }
+
+        display(
+          [
+            {
+              label: "Passenger Account Balance (Wei)",
+              error: null,
+              value: result,
+            },
+          ],
+          "passenger-status"
         );
       });
     });
@@ -116,6 +206,64 @@ import TestAddreses from "./addresses.json";
           "airlines-status"
         );
       });
+    });
+
+    // Buy Insurance
+    DOM.elid("buyInsurance").addEventListener("click", () => {
+      let insurancePassenger = DOM.elid("passengersActAsAccount").value;
+      let insuranceAirline = DOM.elid("passengersRegisteredAirlines").value;
+      let insuranceFlight = DOM.elid("passflightCodes").value;
+      let insuranceDeparture = DOM.elid("passDeparture").value;
+      let insuranceEther = DOM.elid("passEther").value;
+      contract.buy(
+        insurancePassenger,
+        insuranceAirline,
+        insuranceFlight,
+        insuranceDeparture,
+        insuranceEther,
+        (error, result) => {
+          console.log(error, result);
+          display(
+            [
+              {
+                label: "Buy Insurance",
+                error: error,
+                value: `passenger: ${insurancePassenger}, 
+                      airline: ${insuranceAirline}, 
+                      flight: ${insuranceFlight}, 
+                      departure: ${insuranceDeparture}, 
+                      coverage: ${insuranceEther}`,
+              },
+            ],
+            "passenger-status"
+          );
+        }
+      );
+    });
+
+    // Register Flight
+    DOM.elid("registerFlight").addEventListener("click", () => {
+      let flightCode = DOM.elid("flightCodes").value;
+      let departure = DOM.elid("departure").value;
+      let airline = DOM.elid("flightsActAsAccount").value;
+      contract.registerFlight(
+        airline,
+        flightCode,
+        departure,
+        (error, result) => {
+          console.log(error, result);
+          display(
+            [
+              {
+                label: "Register Flight",
+                error: error,
+                value: `airline: ${airline}, flightCode: ${flightCode}, departure: ${departure}`,
+              },
+            ],
+            "flight-status"
+          );
+        }
+      );
     });
 
     // Set Operational Status

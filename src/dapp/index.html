@@ -54,17 +54,44 @@
 
         <div class="input-group mb-3">
             <div class="input-group-prepend">
-                <span class="input-group-text" id="inputGroup-sizing-default">Flight Number</span>
+                <label class="input-group-text" for="passengersRegisteredAirlines">Registered Airline</label>
             </div>
-            <input type="text" id="flight-number" class="form-control" aria-label="Flight Number"
-                aria-describedby="inputGroup-sizing-default">
-            <btn class="btn btn-dark" id="submit-oracle">Submit to Oracles</btn>
+            <select class="custom-select rounded listregisteredairlines" id="oracleAirline">
+                <option selected="">Select airline ...</option>
+            </select>
         </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="oracleCode">Flight Code</label>
+            </div>
+            <select class="custom-select rounded" id="oracleCode">
+                <option selected="">Select flight code ...</option>
+                <option value="FJ390">FJ390</option>
+                <option value="LX991">LX991</option>
+                <option value="ZF384">ZF384</option>
+                <option value="KJ764">KJ764</option>
+            </select>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="oracleTime">Time</label>
+            </div>
+            <select class="custom-select rounded" id="oracleTime">
+                <option selected="">Select departure time ...</option>
+                <option value="0900">0900</option>
+                <option value="1000">1000</option>
+                <option value="1100">1100</option>
+                <option value="1200">1200</option>
+            </select>
+        </div>
+        <btn class="btn btn-dark" id="submit-oracle">Submit to Oracles</btn>
 
         <div id="display-wrapper" class="top-5"></div>
     </main>
 
-    <main class="container shadow-lg last-container">
+    <main class="container shadow-lg">
         <h2>Airlines</h2>
         <h5>Airline Management</h5>
 
@@ -114,6 +141,112 @@
         </div>
 
         <div id="airlines-status" class="top-5"></div>
+    </main>
+
+
+    <main class="container shadow-lg">
+        <h2>Flights</h2>
+        <h5>Flight management for authorized airlines (registered & funded)</h5>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="flightsActAsAccount">Airline</label>
+            </div>
+            <select class="custom-select rounded listregisteredairlines" id="flightsActAsAccount">
+                <option selected="">Select account ...</option>
+            </select>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="flightCodes">Flight Codes</label>
+            </div>
+            <select class="custom-select rounded" id="flightCodes">
+                <option selected="">Select flight code ...</option>
+                <option value="FJ390">FJ390</option>
+                <option value="LX991">LX991</option>
+                <option value="ZF384">ZF384</option>
+                <option value="KJ764">KJ764</option>
+            </select>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="departure">Departure Time</label>
+            </div>
+            <select class="custom-select rounded" id="departure">
+                <option selected="">Select departure time ...</option>
+                <option value="0900">0900</option>
+                <option value="1000">1000</option>
+                <option value="1100">1100</option>
+                <option value="1200">1200</option>
+            </select>
+        </div>
+        <btn class="btn btn-dark" id="registerFlight">Register Flight</btn>
+        <div id="flight-status" class="top-5"></div>
+    </main>
+
+    <main class="container shadow-lg last-container">
+        <h2>Passengers</h2>
+        <h5>Passenger interface to buy insurance and withraw funds</h5>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="passengersActAsAccount">Passenger</label>
+            </div>
+            <select class="custom-select rounded addroptions" id="passengersActAsAccount">
+                <option selected="">Select passenger account ...</option>
+            </select>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="passengersRegisteredAirlines">Registered Airline</label>
+            </div>
+            <select class="custom-select rounded listregisteredairlines" id="passengersRegisteredAirlines">
+                <option selected="">Select airline ...</option>
+            </select>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="passflightCodes">Flight Codes</label>
+            </div>
+            <select class="custom-select rounded" id="passflightCodes">
+                <option selected="">Select flight code ...</option>
+                <option value="FJ390">FJ390</option>
+                <option value="LX991">LX991</option>
+                <option value="ZF384">ZF384</option>
+                <option value="KJ764">KJ764</option>
+            </select>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="passDeparture">Departure Time</label>
+            </div>
+            <select class="custom-select rounded" id="passDeparture">
+                <option selected="">Select departure time ...</option>
+                <option value="0900">0900</option>
+                <option value="1000">1000</option>
+                <option value="1100">1100</option>
+                <option value="1200">1200</option>
+            </select>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">ETH</span>
+            </div>
+            <input type="text" id="passEther" class="form-control" aria-label="ETH"
+                aria-describedby="inputGroup-sizing-default">
+        </div>
+
+        <btn class="btn btn-dark" id="buyInsurance">Buy Insurance</btn>
+        <btn class="btn btn-dark" id="getCreditBalance">Get Credit Balance</btn>
+        <btn class="btn btn-dark" id="withdrawCreditBalance">Withdraw Balance</btn>
+        <btn class="btn btn-dark" id="getAccountBalance">Get Account Balance</btn>
+        <div id="passenger-status" class="top-5"></div>
     </main>
 
 </body>
