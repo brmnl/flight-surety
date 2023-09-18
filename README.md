@@ -2,6 +2,8 @@
 
 An InsurTech flight delay insurance solution based on Ethereum smart contract that uses trustless Oracles for flight information.
 
+![Flight Surety DApp](images/browser.png)
+
 ## Project Description
 
 Flight Surety is an insurance product designed for airline passengers. It provides credits to passengers when their flights are delayed due to airline faults. This credit can be withdrawn by passengers at their convenience. The system operates through a smart contract deployed on the Ethereum blockchain, which is funded with Ether and managed by a consortium of airlines. The smart contract disburses credits to insured passengers when specific conditions, such as flight delays due to airline errors, are met.
@@ -62,6 +64,8 @@ ganache-cli -l 99999999999999 -m "wish exercise slender legal goose lecture subw
 
 Using this command, the mnemonic is used to generate 50 accounts with 1000 ETH each. The `-l` flag sets the block gas limit to a very high number, `-e` sets the default account balance to 1000 ETH, and `-a` sets the number of accounts to generate.
 
+![Ganache](images/ganache.png)
+
 Compile smart contracts:
 
 ```
@@ -82,6 +86,8 @@ truffle migrate
 npm run dapp
 ```
 
+![Truffle Compile and Migrate](images/truffle.png)
+
 Browse to http://localhost:8000 to use the DApp.
 
 Deploy mock Oracles server:
@@ -90,6 +96,8 @@ Deploy mock Oracles server:
 npm run server
 truffle test ./test/oracles.js
 ```
+
+![Running Oracles](images/oracle.png)
 
 ## Project Requirements (To Do's)
 
